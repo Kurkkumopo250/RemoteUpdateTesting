@@ -1,5 +1,8 @@
 from PySide6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QPushButton, QLineEdit, QLabel, QMessageBox
 from updater import update_files_from_github
+import os
+import sys
+import time
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -40,7 +43,7 @@ class MainWindow(QMainWindow):
             self.display_label.setText(self.input_field.text() or "No input provided")
     
     def check_updates(self):
-        """Calls the GitHub update function and displays the result."""
+        """Calls the GitHub update function, displays the result, and restarts if updated."""
         result = update_files_from_github(
             repo_url='https://api.github.com/repos/Kurkkumopo250/RemoteUpdateTesting',
             manifest_path='manifest.json',
@@ -58,3 +61,10 @@ class MainWindow(QMainWindow):
             message += "No errors"
         
         QMessageBox.information(self, "Update Result", message)
+        
+        # Restart the application if update was successful or partial
+        if result['status'] in ['success', 'partial']:
+            QMessageBox.information(self, "Restarting", "Application will restart in 2 seconds...")
+            time.sleep(2)  # 2-second delay to allow user to read the message
+            # Restart the application using the same executable and arguments
+            os.execv(sys.executable, [sys.executable] + sys.argv)
