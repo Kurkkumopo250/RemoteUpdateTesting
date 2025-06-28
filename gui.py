@@ -45,7 +45,8 @@ class MainWindow(QMainWindow):
             repo_url='https://api.github.com/repos/Kurkkumopo250/RemoteUpdateTesting',
             manifest_path='manifest.json',
             local_dir='.',
-            branch='main'
+            branch='main',
+            github_token=None
         )
         
         message = f"Update Status: {result['status']}\n"
