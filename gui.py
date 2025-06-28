@@ -14,10 +14,10 @@ class MainWindow(QMainWindow):
         
         # GUI elements
         self.input_field = QLineEdit()
-        self.input_field.setPlaceholderText("Enter text")
+        self.input_field.setPlaceholderText("Enter some text")
         self.layout.addWidget(self.input_field)
         
-        self.display_label = QLabel("PySide6!")
+        self.display_label = QLabel("Hello, PySide6!")
         self.layout.addWidget(self.display_label)
         
         self.toggle_button = QPushButton("Toggle Label")
