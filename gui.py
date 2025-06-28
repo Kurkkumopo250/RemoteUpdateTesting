@@ -42,9 +42,9 @@ class MainWindow(QMainWindow):
     def check_updates(self):
         """Calls the GitHub update function and displays the result."""
         result = update_files_from_github(
-            repo_url='https://api.github.com/repos/username/repo',
+            repo_url='https://api.github.com/repos/Kurkkumopo250/RemoteUpdateTesting',
             manifest_path='manifest.json',
-            local_dir='./app_data',
+            local_dir='.',
             branch='main'
         )
         
