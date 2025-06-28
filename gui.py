@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QPushButton, QLineEdit, QLabel, QMessageBox
-from Updater import update_files_from_github
+from updater import update_files_from_github
 
 class MainWindow(QMainWindow):
     def __init__(self):
