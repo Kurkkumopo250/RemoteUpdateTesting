@@ -2,6 +2,85 @@ import requests
 import json
 import os
 
+def check_updates_available(repo_url, manifest_path, local_dir, branch='main', github_token=None):
+    """
+    Checks if updates are available by comparing remote and local manifest versions.
+    
+    Args:
+        repo_url (str): Base URL of the GitHub repository (e.g., 'https://api.github.com/repos/username/repo')
+        manifest_path (str): Path to the manifest file in the repository (e.g., 'manifest.json')
+        local_dir (str): Local directory where manifest is stored
+        branch (str): Repository branch to fetch from (default: 'main')
+        github_token (str, optional): GitHub Personal Access Token for private repositories
+    
+    Returns:
+        dict: Result indicating if update is available, remote version, and any errors
+    """
+    try:
+        os.makedirs(local_dir, exist_ok=True)
+        remote_manifest_url = f"{repo_url}/contents/{manifest_path}?ref={branch}"
+        headers = {'Accept': 'application/vnd.github.v3+json'}
+        if github_token:
+            headers['Authorization'] = f'Bearer {github_token}'
+        
+        print(f"Checking manifest at: {remote_manifest_url}")
+        response = requests.get(remote_manifest_url, headers=headers)
+        if response.status_code == 404:
+            error_msg = f"Manifest file not found at {remote_manifest_url}"
+            print(f"Error: {error_msg} (HTTP 404)")
+            return {
+                'update_available': False,
+                'remote_version': None,
+                'errors': [error_msg]
+            }
+        elif response.status_code == 403:
+            error_msg = "Access forbidden. Check repository permissions or provide a valid GitHub token."
+            print(f"Error: {error_msg} (HTTP 403)")
+            return {
+                'update_available': False,
+                'remote_version': None,
+                'errors': [error_msg]
+            }
+        response.raise_for_status()
+        
+        remote_manifest_data = response.json()
+        print(f"Fetching manifest content from: {remote_manifest_data['download_url']}")
+        manifest_response = requests.get(remote_manifest_data['download_url'], headers=headers)
+        if manifest_response.status_code != 200:
+            error_msg = f"Failed to fetch manifest content from {remote_manifest_data['download_url']} (HTTP {manifest_response.status_code})"
+            print(f"Error: {error_msg}")
+            return {
+                'update_available': False,
+                'remote_version': None,
+                'errors': [error_msg]
+            }
+        remote_manifest_content = manifest_response.json()
+        
+        local_manifest_path = os.path.join(local_dir, manifest_path)
+        local_manifest = {'version': '0.0.0'}
+        if os.path.exists(local_manifest_path):
+            with open(local_manifest_path, 'r') as f:
+                local_manifest = json.load(f)
+        
+        remote_version = remote_manifest_content.get('version', '0.0.0')
+        local_version = local_manifest.get('version', '0.0.0')
+        print(f"Remote version: {remote_version}, Local version: {local_version}")
+        
+        return {
+            'update_available': remote_version != local_version,
+            'remote_version': remote_version,
+            'errors': []
+        }
+    
+    except Exception as e:
+        error_msg = f"Update check failed: {str(e)}"
+        print(f"Error: {error_msg}")
+        return {
+            'update_available': False,
+            'remote_version': None,
+            'errors': [error_msg]
+        }
+
 def update_files_from_github(repo_url, manifest_path, local_dir, branch='main', github_token=None):
     """
     Fetches updated files from a GitHub repository based on a manifest file with an overall application version.
@@ -102,7 +181,7 @@ def update_files_from_github(repo_url, manifest_path, local_dir, branch='main', 
                 with open(local_manifest_path, 'w') as f:
                     json.dump(remote_manifest_content, f, indent=2)
         else:
-            print("No update needed: Remote and local versions are the same")
+            print("No update needed: Remote evenings are the same")
             return {
                 'status': 'no_update_needed',
                 'updated_files': [],

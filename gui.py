@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QPushButton, QLineEdit, QLabel, QMessageBox
-from updater import update_files_from_github
+from updater import update_files_from_github, check_updates_available
 import os
 import sys
 import time
@@ -34,6 +34,9 @@ class MainWindow(QMainWindow):
         # State for toggle
         self.label_state = True
         
+        # Check for updates on startup
+        self.check_for_updates_on_startup()
+    
     def toggle_label(self):
         """Toggles the label text between two states."""
         self.label_state = not self.label_state
@@ -41,6 +44,20 @@ class MainWindow(QMainWindow):
             self.display_label.setText("Hello, PySide6!")
         else:
             self.display_label.setText(self.input_field.text() or "No input provided")
+    
+    def check_for_updates_on_startup(self):
+        """Checks for available updates on startup and updates button if update is available."""
+        result = check_updates_available(
+            repo_url='https://api.github.com/repos/Kurkkumopo250/RemoteUpdateTesting',
+            manifest_path='manifest.json',
+            local_dir='.',
+            branch='main',
+            github_token=None
+        )
+        if result['update_available']:
+            self.update_button.setText("Check for Updates [Update Available]")
+            self.update_button.setStyleSheet("background-color: #ffcc00;")  # Yellow background to indicate update
+            QMessageBox.information(self, "Update Check", f"Update available: Remote version {result['remote_version']}")
     
     def check_updates(self):
         """Calls the GitHub update function, displays the result, and restarts if updated."""
@@ -66,5 +83,4 @@ class MainWindow(QMainWindow):
         if result['status'] in ['success', 'partial']:
             QMessageBox.information(self, "Restarting", "Application will restart in 2 seconds...")
             time.sleep(2)  # 2-second delay to allow user to read the message
-            # Restart the application using the same executable and arguments
             os.execv(sys.executable, [sys.executable] + sys.argv)
