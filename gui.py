@@ -57,7 +57,7 @@ class MainWindow(QMainWindow):
         if result['update_available']:
             self.update_button.setText("Check for Updates [Update Available]")
             self.update_button.setStyleSheet("background-color: #ffcc00;")  # Yellow background to indicate update
-            QMessageBox.information(self, "Update Check", f"Update available: Remote version {result['remote_version']}")
+            #QMessageBox.information(self, "Update Check", f"Update available: Remote version {result['remote_version']}")
     
     def check_updates(self):
         """Calls the GitHub update function, displays the result, and restarts if updated."""
